@@ -1,5 +1,4 @@
 @file:Suppress("NOTHING_TO_INLINE")
-
 package logcat
 
 import logcat.LogPriority.DEBUG
@@ -56,12 +55,12 @@ inline fun Any.logcat(
    * site.
    */
   tag: String? = null,
-  message: () -> String
+  message: MessageSupplier
 ) {
   LogcatLogger.logger.let { logger ->
     if (logger.isLoggable(priority)) {
       val tagOrCaller = tag ?: outerClassSimpleNameInternalOnlyDoNotUseKThxBye()
-      logger.log(priority, tagOrCaller, message())
+      logger.log(priority, tagOrCaller, message.get())
     }
   }
 }
@@ -74,13 +73,20 @@ inline fun Any.logcat(
 inline fun logcat(
   tag: String,
   priority: LogPriority = DEBUG,
-  message: () -> String
+  message: MessageSupplier
 ) {
   with(LogcatLogger.logger) {
     if (isLoggable(priority)) {
-      log(priority, tag, message())
+      log(priority, tag, message.get())
     }
   }
+}
+
+/**
+ * Function to lazily provide a log message, if it is ever needed.
+ */
+fun interface MessageSupplier {
+  fun get(): String
 }
 
 @PublishedApi
